@@ -15,7 +15,15 @@ pub fn Cell(
 
     let cell_class = move || {
         let cell = cell_data.get();
-        let mut classes = vec!["w-10", "h-10", "m-1", "rounded"];
+        let mut classes = vec![
+            "w-10",
+            "h-10",
+            "m-1",
+            "rounded",
+            "flex",
+            "justify-center",
+            "items-center",
+        ];
         match cell.open {
             true if cell.cell_type == CellType::Bomb => classes.push("bg-red-200"),
             true => classes.push("bg-slate-800"),
@@ -25,6 +33,6 @@ pub fn Cell(
     };
 
     view! {
-        <div class=cell_class on:click=handle_click></div>
+        <div class=cell_class on:click=handle_click>{move || cell_data.get().content }</div>
     }
 }

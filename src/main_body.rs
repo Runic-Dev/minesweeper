@@ -1,5 +1,8 @@
 use crate::cell::Cell;
-use crate::cell_data::{setup_game, CellType};
+use crate::cell_data::{
+    setup_game,
+    CellType::{Bomb, Number},
+};
 use leptos::*;
 
 pub fn MainBody() -> impl IntoView {
@@ -7,11 +10,37 @@ pub fn MainBody() -> impl IntoView {
 
     let update_cell = move |(row, col): (usize, usize)| {
         game_state.update(|state| {
+            let state_clone = state.clone();
             let cell = &mut state[row][col];
-            if cell.cell_type == CellType::Bomb {
+            if cell.cell_type == Bomb {
                 print!("Game is lost!");
             }
+
+            match (row, col) {
+                (r, c) if r > 0 && r < state_clone.len() && c > 0 && c < state_clone[row].len() => {
+                    for coords in &[
+                        (row - 1, col),
+                        (row - 1, col - 1),
+                        (row - 1, col + 1),
+                        (row + 1, col),
+                        (row + 1, col - 1),
+                        (row + 1, col + 1),
+                        (row, col - 1),
+                        (row, col + 1),
+                    ] {
+                        if state_clone[coords.0][coords.1].cell_type == Bomb {
+                            cell.number += 1;
+                        }
+                    }
+                }
+                (_, _) => {}
+            }
+
             cell.open = true;
+
+            if cell.cell_type == Number && cell.number > 0 {
+                cell.content = format!("{}", cell.number);
+            }
         });
     };
 
