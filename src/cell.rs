@@ -34,7 +34,12 @@ pub fn Cell(
         classes.join(" ")
     };
 
+    let get_content = move || match cell_data.get().cell_type {
+        CellType::Number { local_bombs } => format!("{}", local_bombs),
+        CellType::Bomb => String::new(),
+    };
+
     view! {
-        <div class=cell_class on:click=handle_click>{move || cell_data.get().content }</div>
+        <div class=cell_class on:click=handle_click>{move || get_content() }</div>
     }
 }

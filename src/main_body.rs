@@ -122,8 +122,6 @@ pub fn MainBody() -> impl IntoView {
                         }
                         Err(message) => log!("{}", message),
                     }
-
-                    cell.content = format!("{}", local_bombs);
                 }
                 Bomb => log!("Game is lost!"),
             }
