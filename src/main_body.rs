@@ -16,9 +16,14 @@ pub fn MainBody() -> impl IntoView {
                 print!("Game is lost!");
             }
 
-            match (row, col) {
-                (r, c) if r > 0 && r < state_clone.len() && c > 0 && c < state_clone[row].len() => {
-                    for coords in &[
+            let coords = match (row, col) {
+                (r, c)
+                    if r > 0
+                        && r < state_clone.len() - 1
+                        && c > 0
+                        && c < state_clone[row].len() - 1 =>
+                {
+                    vec![
                         (row - 1, col),
                         (row - 1, col - 1),
                         (row - 1, col + 1),
@@ -27,13 +32,51 @@ pub fn MainBody() -> impl IntoView {
                         (row + 1, col + 1),
                         (row, col - 1),
                         (row, col + 1),
-                    ] {
-                        if state_clone[coords.0][coords.1].cell_type == Bomb {
-                            cell.number += 1;
-                        }
-                    }
+                    ]
                 }
-                (_, _) => {}
+                (r, c) if r > 0 && r < state_clone.len() - 1 && c == 0 => {
+                    vec![
+                        (row - 1, col),
+                        (row - 1, col + 1),
+                        (row + 1, col),
+                        (row + 1, col + 1),
+                        (row, col + 1),
+                    ]
+                }
+                (r, c) if r < 0 && r < state_clone.len() - 1 && c == state_clone[row].len() - 1 => {
+                    vec![
+                        (row - 1, col),
+                        (row - 1, col - 1),
+                        (row + 1, col),
+                        (row + 1, col - 1),
+                        (row, col - 1),
+                    ]
+                }
+                (r, c) if r == 0 && c > 0 && c < state_clone[row].len() - 1 => {
+                    vec![
+                        (row + 1, col),
+                        (row + 1, col - 1),
+                        (row + 1, col + 1),
+                        (row, col - 1),
+                        (row, col + 1),
+                    ]
+                }
+                (r, c) if r == state_clone.len() - 1 && c > 0 && c < state_clone[row].len() - 1 => {
+                    vec![
+                        (row - 1, col),
+                        (row - 1, col - 1),
+                        (row - 1, col + 1),
+                        (row, col - 1),
+                        (row, col + 1),
+                    ]
+                }
+                (_, _) => panic!("Miscalculated grid position"),
+            };
+
+            for (x, y) in coords {
+                if state_clone[x][y].cell_type == Bomb {
+                    cell.number += 1;
+                }
             }
 
             cell.open = true;
