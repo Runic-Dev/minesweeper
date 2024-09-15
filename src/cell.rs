@@ -1,15 +1,17 @@
+use leptos::logging::log;
 use leptos::*;
 
-use crate::cell_data::{CellData, CellType};
+use crate::cell_state::{CellState, CellType};
 
 #[component]
 pub fn Cell(
     row: usize,
     col: usize,
-    #[prop(into)] cell_data: Memo<CellData>,
+    #[prop(into)] cell_data: Memo<CellState>,
     on_click: impl Fn((usize, usize)) + 'static,
 ) -> impl IntoView {
     let handle_click = move |_| {
+        log!("Row: {}, Col: {}", row, col);
         on_click((row, col));
     };
 

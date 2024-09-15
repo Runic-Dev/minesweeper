@@ -1,6 +1,6 @@
 mod app;
 mod cell;
-mod cell_data;
+mod cell_state;
 mod header;
 mod main_body;
 
