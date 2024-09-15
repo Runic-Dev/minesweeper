@@ -1,5 +1,12 @@
+mod app;
+mod cell;
+mod cell_data;
+mod header;
+mod main_body;
+
+use crate::app::App;
 use leptos::{mount_to_body, view};
 
 fn main() {
-    mount_to_body(|| view! { <p>"Hello world!"</p> })
+    mount_to_body(|| view! { <App /> })
 }
