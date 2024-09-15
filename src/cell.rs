@@ -26,7 +26,7 @@ pub fn Cell(
             "justify-center",
             "items-center",
         ];
-        match cell.open {
+        match cell.is_open {
             true if cell.cell_type == CellType::Bomb => classes.push("bg-red-200"),
             true => classes.push("bg-slate-800"),
             false => classes.push("bg-slate-200"),
@@ -35,8 +35,8 @@ pub fn Cell(
     };
 
     let get_content = move || match cell_data.get().cell_type {
-        CellType::Number { local_bombs } => format!("{}", local_bombs),
-        CellType::Bomb => String::new(),
+        CellType::Number { local_bombs } if local_bombs > 0 => format!("{}", local_bombs),
+        _ => String::new(),
     };
 
     view! {

@@ -1,132 +1,25 @@
 use crate::cell::Cell;
-use crate::cell_state::{
-    setup_game,
-    CellType::{Bomb, Number},
-};
-use leptos::logging;
+use crate::cell_state::{get_neighbours, setup_game, CellType};
+use leptos::logging::log;
 use leptos::*;
-use logging::log;
 
 pub fn MainBody() -> impl IntoView {
     let game_state = create_rw_signal(setup_game(10, 20, 20));
 
     let update_cell = move |(row, col): (usize, usize)| {
         game_state.update(|state| {
-            let state_clone = state.clone();
-            let cell = &mut state[row][col];
-
-            match cell.cell_type {
-                Number { mut local_bombs } => {
-                    let coords_result = match (row, col) {
-                        (r, c)
-                            if r > 0
-                                && r < state_clone.len() - 1
-                                && c > 0
-                                && c < state_clone[row].len() - 1 =>
-                        {
-                            log!(
-                                "state_clone len: {}, state_clone row len: {}",
-                                state_clone.len(),
-                                state_clone[row].len()
-                            );
-                            log!("Non edge case");
-                            Ok(vec![
-                                (row - 1, col),
-                                (row - 1, col - 1),
-                                (row - 1, col + 1),
-                                (row + 1, col),
-                                (row + 1, col - 1),
-                                (row + 1, col + 1),
-                                (row, col - 1),
-                                (row, col + 1),
-                            ])
-                        }
-                        (r, c) if r > 0 && r < state_clone.len() - 1 && c == 0 => {
-                            log!(
-                                "state_clone len: {}, state_clone row len: {}",
-                                state_clone.len(),
-                                state_clone[row].len()
-                            );
-                            log!("Column is 0");
-                            Ok(vec![
-                                (row - 1, col),
-                                (row - 1, col + 1),
-                                (row + 1, col),
-                                (row + 1, col + 1),
-                                (row, col + 1),
-                            ])
-                        }
-                        (r, c)
-                            if r > 0
-                                && r < state_clone.len() - 1
-                                && c == state_clone[row].len() - 1 =>
-                        {
-                            log!(
-                                "state_clone len: {}, state_clone row len: {}",
-                                state_clone.len(),
-                                state_clone[row].len()
-                            );
-                            log!("Column is on the end");
-                            Ok(vec![
-                                (row - 1, col),
-                                (row - 1, col - 1),
-                                (row + 1, col),
-                                (row + 1, col - 1),
-                                (row, col - 1),
-                            ])
-                        }
-                        (r, c) if r == 0 && c > 0 && c < state_clone[row].len() - 1 => {
-                            log!(
-                                "state_clone len: {}, state_clone row len: {}",
-                                state_clone.len(),
-                                state_clone[row].len()
-                            );
-                            log!("Row is 0");
-                            Ok(vec![
-                                (row + 1, col),
-                                (row + 1, col - 1),
-                                (row + 1, col + 1),
-                                (row, col - 1),
-                                (row, col + 1),
-                            ])
-                        }
-                        (r, c)
-                            if r == state_clone.len() - 1
-                                && c > 0
-                                && c < state_clone[row].len() - 1 =>
-                        {
-                            log!(
-                                "state_clone len: {}, state_clone row len: {}",
-                                state_clone.len(),
-                                state_clone[row].len()
-                            );
-                            log!("Row is on the end");
-                            Ok(vec![
-                                (row - 1, col),
-                                (row - 1, col - 1),
-                                (row - 1, col + 1),
-                                (row, col - 1),
-                                (row, col + 1),
-                            ])
-                        }
-                        (r, c) => Err(format!("Unhandled case. Row: {}, Col: {}", r, c)),
-                    };
-
-                    match coords_result {
-                        Ok(coords) => {
-                            for (x, y) in coords {
-                                if state_clone[x][y].cell_type == Bomb {
-                                    local_bombs += 1;
-                                }
-                            }
-                        }
-                        Err(message) => log!("{}", message),
+            let this_cell = &mut state[row][col];
+            this_cell.is_open = true;
+            if let CellType::Number { local_bombs: 0 } = this_cell.cell_type {
+                match get_neighbours(row, col, state.len(), state[row].len()) {
+                    Ok(neighbours) => {
+                        neighbours.into_iter().for_each(|(x, y)| {
+                            state[x][y].is_open = true;
+                        });
                     }
+                    Err(message) => log!("{}", message),
                 }
-                Bomb => log!("Game is lost!"),
             }
-
-            cell.open = true;
         });
     };
 

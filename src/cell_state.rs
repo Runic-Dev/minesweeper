@@ -1,9 +1,10 @@
+use leptos::logging::log;
 use rand::{rngs::ThreadRng, thread_rng, Rng};
 
 #[derive(Clone, PartialEq, Default)]
 pub struct CellState {
     pub cell_type: CellType,
-    pub open: bool,
+    pub is_open: bool,
     pub number: usize,
 }
 
@@ -24,8 +25,72 @@ fn set_random_cell_to_mine(
 
     if let CellType::Number { local_bombs: 0 } = game_setup[rand_x][rand_y].cell_type {
         game_setup[rand_x][rand_y].cell_type = CellType::Bomb;
+        let neighbours_result = get_neighbours(rand_x, rand_y, x_axis, y_axis);
+
+        match neighbours_result {
+            Ok(neighbours) => {
+                neighbours.into_iter().for_each(|(x, y)| {
+                    if let CellType::Number {
+                        ref mut local_bombs,
+                    } = game_setup[x][y].cell_type
+                    {
+                        *local_bombs += 1
+                    }
+                });
+            }
+            Err(message) => log!("{}", message),
+        }
     } else {
         set_random_cell_to_mine(rng, x_axis, y_axis, game_setup);
+    }
+}
+
+pub fn get_neighbours(
+    rand_x: usize,
+    rand_y: usize,
+    x_len: usize,
+    y_len: usize,
+) -> Result<Vec<(usize, usize)>, String> {
+    match (rand_x, rand_y) {
+        (x, y) if x > 0 && x < x_len - 1 && y > 0 && y < y_len - 1 => Ok(vec![
+            (x - 1, y),
+            (x - 1, y - 1),
+            (x - 1, y + 1),
+            (x + 1, y),
+            (x + 1, y - 1),
+            (x + 1, y + 1),
+            (x, y - 1),
+            (x, y + 1),
+        ]),
+        (x, y) if x == 0 && y > 0 && y < y_len - 1 => Ok(vec![
+            (x + 1, y),
+            (x + 1, y - 1),
+            (x + 1, y + 1),
+            (x, y - 1),
+            (x, y + 1),
+        ]),
+        (x, y) if x == x_len - 1 && y > 0 && y < y_len - 1 => Ok(vec![
+            (x - 1, y),
+            (x - 1, y - 1),
+            (x - 1, y + 1),
+            (x, y - 1),
+            (x, y + 1),
+        ]),
+        (x, y) if x > 0 && x < x_len - 1 && y == 0 => Ok(vec![
+            (x - 1, y),
+            (x - 1, y + 1),
+            (x + 1, y),
+            (x + 1, y + 1),
+            (x, y + 1),
+        ]),
+        (x, y) if x > 0 && x < x_len - 1 && y == y_len - 1 => Ok(vec![
+            (x - 1, y),
+            (x - 1, y - 1),
+            (x + 1, y),
+            (x + 1, y - 1),
+            (x, y - 1),
+        ]),
+        (x, y) => Err(format!("Unhandled case. x: {}, y: {}", x, y)),
     }
 }
 
