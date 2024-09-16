@@ -23,7 +23,7 @@ fn set_random_cell_to_mine(
     let rand_x = rng.gen_range(0..x_axis);
     let rand_y = rng.gen_range(0..y_axis);
 
-    if let CellType::Number { local_bombs: 0 } = game_setup[rand_x][rand_y].cell_type {
+    if let CellType::Number { local_bombs: _ } = game_setup[rand_x][rand_y].cell_type {
         game_setup[rand_x][rand_y].cell_type = CellType::Bomb;
         let neighbours_result = get_neighbours(rand_x, rand_y, x_axis, y_axis);
 
@@ -90,6 +90,12 @@ pub fn get_neighbours(
             (x + 1, y - 1),
             (x, y - 1),
         ]),
+        (x, y) if x == 0 && y == 0 => Ok(vec![(x + 1, y), (x + 1, y + 1), (x, y + 1)]),
+        (x, y) if x == x_len - 1 && y == y_len - 1 => {
+            Ok(vec![(x - 1, y), (x - 1, y - 1), (x, y - 1)])
+        }
+        (x, y) if x == x_len - 1 && y == 0 => Ok(vec![(x - 1, y), (x - 1, y + 1), (x, y + 1)]),
+        (x, y) if x == 0 && y == y_len - 1 => Ok(vec![(x + 1, y), (x + 1, y - 1), (x, y - 1)]),
         (x, y) => Err(format!("Unhandled case. x: {}, y: {}", x, y)),
     }
 }

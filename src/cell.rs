@@ -20,22 +20,37 @@ pub fn Cell(
         let mut classes = vec![
             "w-10",
             "h-10",
-            "m-1",
+            "my-1",
             "rounded",
             "flex",
             "justify-center",
             "items-center",
         ];
-        match cell.is_open {
-            true if cell.cell_type == CellType::Bomb => classes.push("bg-red-200"),
-            true => classes.push("bg-slate-800"),
-            false => classes.push("bg-slate-200"),
-        };
+
+        if cell.is_open {
+            classes.push("bg-slate-800");
+        } else {
+            classes.push("bg-slate-200");
+        }
+
+        if let CellType::Number { local_bombs } = cell.cell_type {
+            match local_bombs {
+                1 => classes.push("text-cyan-500"),
+                2 => classes.push("text-lime-500"),
+                3 => classes.push("text-fuchsia-500"),
+                4 => classes.push("text-pink-500"),
+                5 => classes.push("text-rose-500"),
+                _ => {}
+            };
+        }
+
         classes.join(" ")
     };
 
     let get_content = move || match cell_data.get().cell_type {
-        CellType::Number { local_bombs } if local_bombs > 0 => format!("{}", local_bombs),
+        CellType::Number { local_bombs } if local_bombs > 0 && cell_data.get().is_open => {
+            format!("{}", local_bombs)
+        }
         _ => String::new(),
     };
 
