@@ -4,10 +4,8 @@ use leptos::logging::log;
 use leptos::*;
 
 fn check_for_surrounding_blanks(row: usize, col: usize, state: &mut [Vec<CellState>]) {
-    log!("Check for surrounding blanks fired");
     match get_neighbours(row, col, state.len(), state[row].len()) {
         Ok(neighbours) => {
-            log!("Successfully got neighbours");
             let closed_neighbours = neighbours
                 .into_iter()
                 .filter(|(x, y)| {
@@ -16,24 +14,12 @@ fn check_for_surrounding_blanks(row: usize, col: usize, state: &mut [Vec<CellSta
                 })
                 .collect::<Vec<(usize, usize)>>();
 
-            log!(
-                "Corr, we got ourselves {} closed_neighbours!",
-                closed_neighbours.len()
-            );
-
             closed_neighbours.into_iter().for_each(|(x, y)| {
                 let this_cell = &mut state[x][y];
-                log!("Opening up neighbour..");
                 this_cell.is_open = true;
                 if let CellType::Number { local_bombs } = this_cell.cell_type {
                     if local_bombs == 0 {
-                        log!("neighbour's local_bombs is 0, checking for surrounding blanks..");
                         check_for_surrounding_blanks(x, y, state);
-                    } else {
-                        log!(
-                            "neighbour's local_bombs is {}, not checking further",
-                            local_bombs
-                        );
                     }
                 }
             });
@@ -50,7 +36,6 @@ pub fn MainBody() -> impl IntoView {
             state[row][col].is_open = true;
             if let CellType::Number { local_bombs } = state[row][col].cell_type {
                 if local_bombs == 0 {
-                    log!("Local bombs on clicked is 0, checking neighbours..");
                     check_for_surrounding_blanks(row, col, state);
                 }
             }
