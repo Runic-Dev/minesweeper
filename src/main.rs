@@ -1,6 +1,8 @@
 mod app;
 mod cell;
 mod cell_state;
+mod click_mode;
+mod game_state;
 mod header;
 mod main_body;
 

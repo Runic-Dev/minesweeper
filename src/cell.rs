@@ -10,7 +10,9 @@ pub fn Cell(
     on_click: impl Fn((usize, usize)) + 'static,
 ) -> impl IntoView {
     let handle_click = move |_| {
-        on_click((row, col));
+        if !cell_data.get().is_open {
+            on_click((row, col));
+        }
     };
 
     let cell_classes = move || {
@@ -31,7 +33,7 @@ pub fn Cell(
                 (CellType::Number { local_bombs: 5 }, true) => "{open_bg_color} text-rose-500",
                 (CellType::Number { local_bombs: _ }, true) => open_bg_color,
                 (CellType::Bomb, true) => "bg-red-200",
-                (_, false) => "bg-slate-200",
+                (_, false) => "bg-slate-200 text-slate-800",
             },
         ]
         .join(" ")
@@ -41,7 +43,12 @@ pub fn Cell(
         CellType::Number { local_bombs } if local_bombs > 0 && cell_data.get().is_open => {
             local_bombs.to_string()
         }
-        _ => String::new(),
+        _ => {
+            if cell_data.get().flagged {
+                return String::from("F");
+            }
+            String::new()
+        }
     };
 
     view! {
