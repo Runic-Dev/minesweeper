@@ -16,32 +16,22 @@ pub fn Cell(
     let cell_classes = move || {
         let open_bg_color = "bg-slate-800";
         [
-            String::from("w-10"),
-            String::from("h-10"),
-            String::from("my-1"),
-            String::from("rounded"),
-            String::from("flex"),
-            String::from("justify-center"),
-            String::from("items-center"),
+            "w-10",
+            "h-10",
+            "my-1",
+            "rounded",
+            "flex",
+            "justify-center",
+            "items-center",
             match (cell_data.get().cell_type, cell_data.get().is_open) {
-                (CellType::Number { local_bombs: 1 }, true) => {
-                    format!("{} text-cyan-500", open_bg_color)
-                }
-                (CellType::Number { local_bombs: 2 }, true) => {
-                    format!("{} text-lime-500", open_bg_color)
-                }
-                (CellType::Number { local_bombs: 3 }, true) => {
-                    format!("{} text-fuchsia-500", open_bg_color)
-                }
-                (CellType::Number { local_bombs: 4 }, true) => {
-                    format!("{} text-pink-500", open_bg_color)
-                }
-                (CellType::Number { local_bombs: 5 }, true) => {
-                    format!("{} text-rose-500", open_bg_color)
-                }
-                (CellType::Number { local_bombs: _ }, true) => open_bg_color.to_string(),
-                (CellType::Bomb, true) => "bg-red-800".to_string(),
-                (_, false) => "bg-slate-200".to_string(),
+                (CellType::Number { local_bombs: 1 }, true) => "{open_bg_color} text-cyan-500",
+                (CellType::Number { local_bombs: 2 }, true) => "{open_bg_color} text-lime-500",
+                (CellType::Number { local_bombs: 3 }, true) => "{open_bg_color} text-fuchsia-500",
+                (CellType::Number { local_bombs: 4 }, true) => "{open_bg_color} text-pink-500",
+                (CellType::Number { local_bombs: 5 }, true) => "{open_bg_color} text-rose-500",
+                (CellType::Number { local_bombs: _ }, true) => open_bg_color,
+                (CellType::Bomb, true) => "bg-red-800",
+                (_, false) => "bg-slate-200",
             },
         ]
         .join(" ")
