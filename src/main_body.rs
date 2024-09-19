@@ -1,6 +1,7 @@
 use crate::cell::Cell;
 use crate::cell_state::{CellState, CellType};
 use crate::click_mode::ClickMode;
+use crate::context_menu::ContextMenu;
 use crate::game_state::{get_neighbours, GameState};
 use leptos::logging::log;
 use leptos::*;
@@ -33,6 +34,13 @@ pub fn MainBody(game_state: RwSignal<GameState>) -> impl IntoView {
         });
     };
 
+    let mut hidden = false;
+
+    let right_click_handler = move |mouse_event: leptos::ev::MouseEvent| {
+        mouse_event.prevent_default();
+        hidden = !hidden;
+    };
+
     let get_content = move || match game_state.get().click_mode {
         ClickMode::Dig => "Dig",
         ClickMode::Flag => "Flag",
@@ -41,10 +49,11 @@ pub fn MainBody(game_state: RwSignal<GameState>) -> impl IntoView {
     view! {
         <div>
         <div class="flex justify-center">
-            <button on:click=toggle_click_mode>{ move || get_content() }</button>
+            <button class="bg-slate-200 text-slate-800 mb-1" on:click=toggle_click_mode>{ move || get_content() }</button>
         </div>
         <div class="flex justify-center">
-            <div class="game-container grid grid-cols-10 gap-x-1 gap-y-1 m-0 px-1 border-double border-4 border-slate-200 rounded">
+            <div on:contextmenu=right_click_handler class="game-container grid grid-cols-10 gap-x-1 gap-y-1 m-0 px-1 border-double border-4 border-slate-200 rounded">
+                <ContextMenu hidden={hidden} />
                 <For
                     each=move || 0..game_state.get().grid.len()
                     key=|&row| row
