@@ -30,7 +30,7 @@ pub fn Cell(
                 (CellType::Number { local_bombs: 4 }, true) => "{open_bg_color} text-pink-500",
                 (CellType::Number { local_bombs: 5 }, true) => "{open_bg_color} text-rose-500",
                 (CellType::Number { local_bombs: _ }, true) => open_bg_color,
-                (CellType::Bomb, true) => "bg-red-800",
+                (CellType::Bomb, true) => "bg-red-200",
                 (_, false) => "bg-slate-200",
             },
         ]
