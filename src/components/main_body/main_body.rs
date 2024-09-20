@@ -1,7 +1,8 @@
-use crate::cell::Cell;
-use crate::cell_state::{CellState, CellType};
-use crate::context_menu::ContextMenu;
+use crate::components::context_menu::ContextMenu;
+use crate::components::tile::Tile;
+use crate::components::touch_menu::TouchMenu;
 use crate::game_state::{get_neighbours, GameState};
+use crate::tile_state::{TileState, TileType};
 use leptos::logging::log;
 use leptos::*;
 
@@ -10,7 +11,7 @@ pub fn MainBody(game_state: RwSignal<GameState>) -> impl IntoView {
     let dig_tile = move |(row, col): (usize, usize)| {
         game_state.update(|state| {
             state.grid[row][col].is_open = true;
-            if let CellType::Number { local_bombs: 0 } = state.grid[row][col].cell_type {
+            if let TileType::Number { local_bombs: 0 } = state.grid[row][col].cell_type {
                 check_for_surrounding_blanks(row, col, &mut state.grid);
             }
         });
@@ -20,39 +21,51 @@ pub fn MainBody(game_state: RwSignal<GameState>) -> impl IntoView {
         game_state.update(|state| state.grid[row][col].flagged = !state.grid[row][col].flagged);
     };
 
-    let (hidden, set_hidden) = create_signal(true);
+    let (ctx_menu_hidden, set_ctx_menu_hidden) = create_signal(true);
+    let (touch_menu_hidden, set_touch_menu_hidden) = create_signal(true);
 
-    let (position, set_position) = create_signal((0, 0));
+    let (ctx_menu_pos, set_ctx_menu_pos) = create_signal((0, 0));
+    let (touch_menu_pos, set_touch_menu_pos) = create_signal((0, 0));
 
     let (ctx_menu_cell, set_ctx_menu_cell) = create_signal(None);
+    let (touch_cell, set_touch_cell) = create_signal(None);
 
     let on_ctx_menu_select = move |(row, col), (x, y): (i32, i32)| {
-        set_position((x, y));
-        set_hidden(false);
+        set_ctx_menu_pos((x, y));
+        set_ctx_menu_hidden(false);
         set_ctx_menu_cell.update(|value| *value = Some((row, col)));
     };
     let on_ctx_menu_dig = move || {
         if let Some(tile_coords) = ctx_menu_cell.get() {
             dig_tile(tile_coords);
         }
-        set_hidden(true);
+        set_ctx_menu_hidden(true);
     };
     let on_ctx_menu_flag = move || {
         if let Some(tile_coords) = ctx_menu_cell.get() {
             flag_tile(tile_coords);
         }
-        set_hidden(true);
+        set_ctx_menu_hidden(true);
     };
     let on_ctx_menu_cancel = move || {
         set_ctx_menu_cell.update(|value| *value = None);
-        set_hidden(true);
+        set_ctx_menu_hidden(true);
+    };
+
+    let touchstart_handler = move |(row, col), (x, y)| {
+        set_touch_menu_pos.update(|value| *value = (x, y));
+        set_touch_menu_hidden(false);
+        set_touch_cell.update(|value| *value = Some((row, col)));
     };
 
     view! {
         <div class="flex justify-center">
             <div class="game-container grid grid-cols-10 gap-x-1 gap-y-1 m-0 px-1 border-double border-4 border-slate-200 rounded">
-                <Show when=move || !hidden.get()>
-                    <ContextMenu position=position on_dig=on_ctx_menu_dig on_flag=on_ctx_menu_flag on_cancel=on_ctx_menu_cancel />
+                <Show when=move || !ctx_menu_hidden.get()>
+                    <ContextMenu position=ctx_menu_pos on_dig=on_ctx_menu_dig on_flag=on_ctx_menu_flag on_cancel=on_ctx_menu_cancel />
+                </Show>
+                <Show when=move || !touch_menu_hidden.get()>
+                    <TouchMenu position=touch_menu_pos />
                 </Show>
                 <For
                     each=move || 0..game_state.get().grid.len()
@@ -68,7 +81,7 @@ pub fn MainBody(game_state: RwSignal<GameState>) -> impl IntoView {
                                             game_state.with(|state| state.grid[row][col].clone())
                                         });
                                         view! {
-                                            <Cell row=row col=col cell_data=cell_data on_click=dig_tile on_rmb_click=on_ctx_menu_select />
+                                            <Tile row=row col=col cell_data=cell_data on_click=dig_tile on_rmb_click=on_ctx_menu_select on_touchstart=touchstart_handler />
                                         }
                                     }
                                 />
@@ -77,25 +90,26 @@ pub fn MainBody(game_state: RwSignal<GameState>) -> impl IntoView {
                     }
                 />
             </div>
+        <div>{move || format!("Top: {}, Left: {}", touch_menu_pos.get().0, touch_menu_pos.get().1)}</div>
         </div>
     }
 }
 
-fn check_for_surrounding_blanks(row: usize, col: usize, state: &mut [Vec<CellState>]) {
+fn check_for_surrounding_blanks(row: usize, col: usize, state: &mut [Vec<TileState>]) {
     match get_neighbours(row, col, state.len(), state[row].len()) {
         Ok(neighbours) => {
             let closed_neighbours = neighbours
                 .into_iter()
                 .filter(|(x, y)| {
                     !state[*x][*y].is_open
-                        && matches!(state[*x][*y].cell_type, CellType::Number { local_bombs: _ })
+                        && matches!(state[*x][*y].cell_type, TileType::Number { local_bombs: _ })
                 })
                 .collect::<Vec<(usize, usize)>>();
 
             closed_neighbours.into_iter().for_each(|(x, y)| {
                 let this_cell = &mut state[x][y];
                 this_cell.is_open = true;
-                if let CellType::Number { local_bombs } = this_cell.cell_type {
+                if let TileType::Number { local_bombs } = this_cell.cell_type {
                     if local_bombs == 0 {
                         check_for_surrounding_blanks(x, y, state);
                     }

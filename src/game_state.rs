@@ -1,30 +1,28 @@
 use leptos::logging::log;
 use rand::{rngs::ThreadRng, thread_rng, Rng};
 
-use crate::{
-    cell_state::{CellState, CellType},
-    click_mode::ClickMode,
+use crate::tile_state::{
+    TileState,
+    TileType::{Bomb, Number},
 };
 
 #[derive(Clone)]
 pub struct GameState {
-    pub click_mode: ClickMode,
-    pub grid: Vec<Vec<CellState>>,
+    pub grid: Vec<Vec<TileState>>,
 }
 
 impl Default for GameState {
     fn default() -> Self {
         Self {
-            click_mode: ClickMode::Dig,
             grid: setup_game(10, 20, 25),
         }
     }
 }
 
-pub fn setup_game(x_axis: usize, y_axis: usize, no_of_bombs: usize) -> Vec<Vec<CellState>> {
+pub fn setup_game(x_axis: usize, y_axis: usize, no_of_bombs: usize) -> Vec<Vec<TileState>> {
     let mut game_setup = vec![];
     for _ in 0..x_axis {
-        game_setup.push(vec![CellState::default(); y_axis]);
+        game_setup.push(vec![TileState::default(); y_axis]);
     }
 
     let mut rng = thread_rng();
@@ -39,19 +37,19 @@ fn set_random_cell_to_mine(
     rng: &mut ThreadRng,
     x_axis: usize,
     y_axis: usize,
-    game_setup: &mut Vec<Vec<CellState>>,
+    game_setup: &mut Vec<Vec<TileState>>,
 ) {
     let rand_x = rng.gen_range(0..x_axis);
     let rand_y = rng.gen_range(0..y_axis);
 
-    if let CellType::Number { local_bombs: _ } = game_setup[rand_x][rand_y].cell_type {
-        game_setup[rand_x][rand_y].cell_type = CellType::Bomb;
+    if let Number { local_bombs: _ } = game_setup[rand_x][rand_y].cell_type {
+        game_setup[rand_x][rand_y].cell_type = Bomb;
         let neighbours_result = get_neighbours(rand_x, rand_y, x_axis, y_axis);
 
         match neighbours_result {
             Ok(neighbours) => {
                 neighbours.into_iter().for_each(|(x, y)| {
-                    if let CellType::Number {
+                    if let Number {
                         ref mut local_bombs,
                     } = game_setup[x][y].cell_type
                     {

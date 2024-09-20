@@ -1,6 +1,6 @@
+use crate::components::header::Header;
+use crate::components::main_body::main_body::MainBody;
 use crate::game_state::GameState;
-use crate::header::Header;
-use crate::main_body::MainBody;
 use leptos::component;
 use leptos::create_rw_signal;
 use leptos::view;
