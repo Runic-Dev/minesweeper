@@ -22,13 +22,10 @@ pub fn MainBody(game_state: RwSignal<GameState>) -> impl IntoView {
     };
 
     let (ctx_menu_hidden, set_ctx_menu_hidden) = create_signal(true);
-    let (touch_menu_hidden, set_touch_menu_hidden) = create_signal(true);
 
     let (ctx_menu_pos, set_ctx_menu_pos) = create_signal((0, 0));
-    let (touch_menu_pos, set_touch_menu_pos) = create_signal((0, 0));
 
     let (ctx_menu_cell, set_ctx_menu_cell) = create_signal(None);
-    let (touch_cell, set_touch_cell) = create_signal(None);
 
     let on_ctx_menu_select = move |(row, col), (x, y): (i32, i32)| {
         set_ctx_menu_pos((x, y));
@@ -52,20 +49,11 @@ pub fn MainBody(game_state: RwSignal<GameState>) -> impl IntoView {
         set_ctx_menu_hidden(true);
     };
 
-    let touchstart_handler = move |(row, col), (x, y)| {
-        set_touch_menu_pos.update(|value| *value = (x, y));
-        set_touch_menu_hidden(false);
-        set_touch_cell.update(|value| *value = Some((row, col)));
-    };
-
     view! {
         <div class="flex justify-center">
             <div class="game-container grid grid-cols-10 gap-x-1 gap-y-1 m-0 px-1 border-double border-4 border-slate-200 rounded">
                 <Show when=move || !ctx_menu_hidden.get()>
                     <ContextMenu position=ctx_menu_pos on_dig=on_ctx_menu_dig on_flag=on_ctx_menu_flag on_cancel=on_ctx_menu_cancel />
-                </Show>
-                <Show when=move || !touch_menu_hidden.get()>
-                    <TouchMenu position=touch_menu_pos />
                 </Show>
                 <For
                     each=move || 0..game_state.get().grid.len()
@@ -81,7 +69,7 @@ pub fn MainBody(game_state: RwSignal<GameState>) -> impl IntoView {
                                             game_state.with(|state| state.grid[row][col].clone())
                                         });
                                         view! {
-                                            <Tile row=row col=col cell_data=cell_data on_click=dig_tile on_rmb_click=on_ctx_menu_select on_touchstart=touchstart_handler />
+                                            <Tile row=row col=col cell_data=cell_data on_click=dig_tile on_rmb_click=on_ctx_menu_select />
                                         }
                                     }
                                 />
@@ -90,7 +78,6 @@ pub fn MainBody(game_state: RwSignal<GameState>) -> impl IntoView {
                     }
                 />
             </div>
-        <div>{move || format!("Top: {}, Left: {}", touch_menu_pos.get().0, touch_menu_pos.get().1)}</div>
         </div>
     }
 }

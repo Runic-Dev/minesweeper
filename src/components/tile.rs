@@ -11,7 +11,7 @@ pub fn Tile(
     #[prop(into)] cell_data: Memo<TileState>,
     on_click: impl Fn((usize, usize)) + 'static,
     on_rmb_click: impl Fn((usize, usize), (i32, i32)) + 'static,
-    on_touchstart: impl Fn((usize, usize), (i32, i32)) + 'static,
+    // on_touchstart: impl Fn((usize, usize), (i32, i32)) + 'static,
 ) -> impl IntoView {
     let lmb_click_handler = move |_| {
         if !cell_data.get().is_open {
@@ -19,14 +19,14 @@ pub fn Tile(
         }
     };
 
-    let touchstart_handler = move |ev: leptos::ev::TouchEvent| {
-        if let Some(touch_event) = ev.dyn_ref::<web_sys::TouchEvent>() {
-            if let Some(touch) = touch_event.touches().get(0) {
-                log!("Touches: {} {}", touch.client_x(), touch.client_y());
-                on_touchstart((row, col), (touch.client_x(), touch.client_y()));
-            }
-        }
-    };
+    // let touchstart_handler = move |ev: leptos::ev::TouchEvent| {
+    //     if let Some(touch_event) = ev.dyn_ref::<web_sys::TouchEvent>() {
+    //         if let Some(touch) = touch_event.touches().get(0) {
+    //             log!("Touches: {} {}", touch.client_x(), touch.client_y());
+    //             on_touchstart((row, col), (touch.client_x(), touch.client_y()));
+    //         }
+    //     }
+    // };
 
     let cell_classes = move || {
         let open_bg_color = "bg-slate-800";
@@ -70,6 +70,6 @@ pub fn Tile(
     };
 
     view! {
-        <div class=cell_classes on:click=lmb_click_handler on:contextmenu=rmb_click_handler on:touchstart=touchstart_handler>{move || get_content() }</div>
+        <div class=cell_classes on:click=lmb_click_handler on:contextmenu=rmb_click_handler>{move || get_content() }</div>
     }
 }
