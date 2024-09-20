@@ -1,14 +1,10 @@
-use leptos::{component, view, IntoView};
+use leptos::{component, view, IntoView, ReadSignal, SignalGet};
 
 #[component]
-pub fn ContextMenu(hidden: bool) -> impl IntoView {
-    let context_menu_classes = move || {
-        if !hidden {
-            return "bg-slate-200 text-slate-800 hidden";
-        }
-        "bg-slate-200 text-slate-800"
-    };
+pub fn ContextMenu(position: ReadSignal<(i32, i32)>) -> impl IntoView {
+    let left_pos = move || format!("{}px", position.get().0);
+    let top_pos = move || format!("{}px", position.get().1);
     view! {
-        <div class=context_menu_classes>Hey there!</div>
+        <div class="bg-slate-200 text-slate-800 absolute" style:left=left_pos style:top=top_pos>Hey there!</div>
     }
 }

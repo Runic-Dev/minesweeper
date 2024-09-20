@@ -1,6 +1,5 @@
 use crate::cell::Cell;
 use crate::cell_state::{CellState, CellType};
-use crate::click_mode::ClickMode;
 use crate::context_menu::ContextMenu;
 use crate::game_state::{get_neighbours, GameState};
 use leptos::logging::log;
@@ -8,52 +7,33 @@ use leptos::*;
 
 #[component]
 pub fn MainBody(game_state: RwSignal<GameState>) -> impl IntoView {
-    let update_cell = move |(row, col): (usize, usize)| {
-        game_state.update(|state| match state.click_mode {
-            ClickMode::Dig => {
-                state.grid[row][col].is_open = true;
-                if let CellType::Number { local_bombs } = state.grid[row][col].cell_type {
-                    if local_bombs == 0 {
-                        check_for_surrounding_blanks(row, col, &mut state.grid);
-                    }
-                }
-            }
-            ClickMode::Flag => {
-                state.grid[row][col].flagged = !state.grid[row][col].flagged;
-            }
-        });
-    };
-
-    let toggle_click_mode = move |_| {
+    let on_lmb_click = move |(row, col): (usize, usize)| {
         game_state.update(|state| {
-            if let ClickMode::Dig = state.click_mode {
-                state.click_mode = ClickMode::Flag;
-            } else {
-                state.click_mode = ClickMode::Dig;
+            state.grid[row][col].is_open = true;
+            if let CellType::Number { local_bombs: 0 } = state.grid[row][col].cell_type {
+                check_for_surrounding_blanks(row, col, &mut state.grid);
             }
         });
     };
 
-    let mut hidden = false;
+    let (hidden, set_hidden) = create_signal(true);
 
-    let right_click_handler = move |mouse_event: leptos::ev::MouseEvent| {
+    let (position, set_position) = create_signal((0, 0));
+
+    let on_rmb_click = move |mouse_event: leptos::ev::MouseEvent| {
         mouse_event.prevent_default();
-        hidden = !hidden;
-    };
-
-    let get_content = move || match game_state.get().click_mode {
-        ClickMode::Dig => "Dig",
-        ClickMode::Flag => "Flag",
+        if hidden.get() {
+            set_hidden(false);
+        }
+        set_position.update(|value| *value = (mouse_event.client_x(), mouse_event.client_y()));
     };
 
     view! {
-        <div>
         <div class="flex justify-center">
-            <button class="bg-slate-200 text-slate-800 mb-1" on:click=toggle_click_mode>{ move || get_content() }</button>
-        </div>
-        <div class="flex justify-center">
-            <div on:contextmenu=right_click_handler class="game-container grid grid-cols-10 gap-x-1 gap-y-1 m-0 px-1 border-double border-4 border-slate-200 rounded">
-                <ContextMenu hidden={hidden} />
+            <div on:contextmenu=on_rmb_click class="game-container grid grid-cols-10 gap-x-1 gap-y-1 m-0 px-1 border-double border-4 border-slate-200 rounded">
+                <Show when=move || !hidden.get()>
+                    <ContextMenu position=position />
+                </Show>
                 <For
                     each=move || 0..game_state.get().grid.len()
                     key=|&row| row
@@ -68,7 +48,7 @@ pub fn MainBody(game_state: RwSignal<GameState>) -> impl IntoView {
                                             game_state.with(|state| state.grid[row][col].clone())
                                         });
                                         view! {
-                                            <Cell row=row col=col cell_data=cell_data on_click=update_cell />
+                                            <Cell row=row col=col cell_data=cell_data on_click=on_lmb_click />
                                         }
                                     }
                                 />
@@ -77,7 +57,6 @@ pub fn MainBody(game_state: RwSignal<GameState>) -> impl IntoView {
                     }
                 />
             </div>
-        </div>
         </div>
     }
 }
