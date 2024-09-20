@@ -7,7 +7,7 @@ use leptos::*;
 
 #[component]
 pub fn MainBody(game_state: RwSignal<GameState>) -> impl IntoView {
-    let on_lmb_click = move |(row, col): (usize, usize)| {
+    let dig_tile = move |(row, col): (usize, usize)| {
         game_state.update(|state| {
             state.grid[row][col].is_open = true;
             if let CellType::Number { local_bombs: 0 } = state.grid[row][col].cell_type {
@@ -16,23 +16,43 @@ pub fn MainBody(game_state: RwSignal<GameState>) -> impl IntoView {
         });
     };
 
+    let flag_tile = move |(row, col): (usize, usize)| {
+        game_state.update(|state| state.grid[row][col].flagged = !state.grid[row][col].flagged);
+    };
+
     let (hidden, set_hidden) = create_signal(true);
 
     let (position, set_position) = create_signal((0, 0));
 
-    let on_rmb_click = move |mouse_event: leptos::ev::MouseEvent| {
-        mouse_event.prevent_default();
-        if hidden.get() {
-            set_hidden(false);
+    let (ctx_menu_cell, set_ctx_menu_cell) = create_signal(None);
+
+    let on_ctx_menu_select = move |(row, col), (x, y): (i32, i32)| {
+        set_position((x, y));
+        set_hidden(false);
+        set_ctx_menu_cell.update(|value| *value = Some((row, col)));
+    };
+    let on_ctx_menu_dig = move || {
+        if let Some(tile_coords) = ctx_menu_cell.get() {
+            dig_tile(tile_coords);
         }
-        set_position.update(|value| *value = (mouse_event.client_x(), mouse_event.client_y()));
+        set_hidden(true);
+    };
+    let on_ctx_menu_flag = move || {
+        if let Some(tile_coords) = ctx_menu_cell.get() {
+            flag_tile(tile_coords);
+        }
+        set_hidden(true);
+    };
+    let on_ctx_menu_cancel = move || {
+        set_ctx_menu_cell.update(|value| *value = None);
+        set_hidden(true);
     };
 
     view! {
         <div class="flex justify-center">
-            <div on:contextmenu=on_rmb_click class="game-container grid grid-cols-10 gap-x-1 gap-y-1 m-0 px-1 border-double border-4 border-slate-200 rounded">
+            <div class="game-container grid grid-cols-10 gap-x-1 gap-y-1 m-0 px-1 border-double border-4 border-slate-200 rounded">
                 <Show when=move || !hidden.get()>
-                    <ContextMenu position=position />
+                    <ContextMenu position=position on_dig=on_ctx_menu_dig on_flag=on_ctx_menu_flag on_cancel=on_ctx_menu_cancel />
                 </Show>
                 <For
                     each=move || 0..game_state.get().grid.len()
@@ -48,7 +68,7 @@ pub fn MainBody(game_state: RwSignal<GameState>) -> impl IntoView {
                                             game_state.with(|state| state.grid[row][col].clone())
                                         });
                                         view! {
-                                            <Cell row=row col=col cell_data=cell_data on_click=on_lmb_click />
+                                            <Cell row=row col=col cell_data=cell_data on_click=dig_tile on_rmb_click=on_ctx_menu_select />
                                         }
                                     }
                                 />

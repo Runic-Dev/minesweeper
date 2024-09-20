@@ -8,8 +8,9 @@ pub fn Cell(
     col: usize,
     #[prop(into)] cell_data: Memo<CellState>,
     on_click: impl Fn((usize, usize)) + 'static,
+    on_rmb_click: impl Fn((usize, usize), (i32, i32)) + 'static,
 ) -> impl IntoView {
-    let handle_click = move |_| {
+    let lmb_click_handler = move |_| {
         if !cell_data.get().is_open {
             on_click((row, col));
         }
@@ -51,7 +52,12 @@ pub fn Cell(
         }
     };
 
+    let rmb_click_handler = move |mouse_event: leptos::ev::MouseEvent| {
+        mouse_event.prevent_default();
+        on_rmb_click((row, col), (mouse_event.client_x(), mouse_event.client_y()));
+    };
+
     view! {
-        <div class=cell_classes on:click=handle_click>{move || get_content() }</div>
+        <div class=cell_classes on:click=lmb_click_handler on:contextmenu=rmb_click_handler>{move || get_content() }</div>
     }
 }
