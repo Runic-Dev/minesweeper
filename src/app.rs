@@ -1,5 +1,5 @@
 use crate::components::header::Header;
-use crate::components::main_body::main_body::MainBody;
+use crate::components::main_body::main_body_component::MainBody;
 use crate::game_state::GameState;
 use leptos::component;
 use leptos::create_rw_signal;

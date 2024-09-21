@@ -1,8 +1,10 @@
 use crate::app::GameStateSetter;
 use crate::components::context_menu::ContextMenu;
-use crate::components::main_body::check_for_surrounding_blanks;
+use crate::components::main_body::{check_for_surrounding_blanks, has_won};
 use crate::components::tile_space::TileSpace;
+use crate::game_state::PlayState::{InProgress, Loss, Win};
 use crate::tile_state::TileType;
+use leptos::logging::log;
 use leptos::*;
 
 #[component]
@@ -10,20 +12,26 @@ pub fn MainBody() -> impl IntoView {
     let game_state = use_context::<GameStateSetter>().unwrap().0;
 
     let dig_tile = move |(row, col): (usize, usize)| {
-        if !game_state.get().game_over {
+        if let InProgress { mines_left: _ } = game_state.get().play_state {
             game_state.update(|state| {
                 state.grid[row][col].is_dug = true;
-                if let TileType::Number { local_bombs: 0 } = state.grid[row][col].cell_type {
+                if let TileType::Number { local_mines: 0 } = state.grid[row][col].cell_type {
                     check_for_surrounding_blanks(row, col, &mut state.grid);
+                    if has_won(&state.grid) {
+                        log!("You won!");
+                        state.play_state = Win;
+                    };
                 }
                 if let TileType::Bomb = state.grid[row][col].cell_type {
+                    log!("Seem to have clicked a bomb! Row: {}, Col: {}", row, col);
                     state
                         .grid
                         .iter_mut()
                         .flatten()
                         .filter(|tile_state| tile_state.cell_type == TileType::Bomb)
                         .for_each(|mine_tile| mine_tile.is_dug = true);
-                    state.game_over = true;
+                    state.play_state = Loss;
+                    log!("You lost!");
                 }
             });
         }

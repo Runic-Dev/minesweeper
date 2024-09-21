@@ -8,12 +8,12 @@ pub struct TileState {
 
 #[derive(Clone, PartialEq)]
 pub enum TileType {
-    Number { local_bombs: usize },
+    Number { local_mines: usize },
     Bomb,
 }
 
 impl Default for TileType {
     fn default() -> Self {
-        TileType::Number { local_bombs: 0 }
+        TileType::Number { local_mines: 0 }
     }
 }

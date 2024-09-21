@@ -7,16 +7,23 @@ use crate::tile_state::{
 };
 
 #[derive(Clone)]
+pub enum PlayState {
+    InProgress { mines_left: usize },
+    Win,
+    Loss,
+}
+
+#[derive(Clone)]
 pub struct GameState {
     pub grid: Vec<Vec<TileState>>,
-    pub game_over: bool,
+    pub play_state: PlayState,
 }
 
 impl Default for GameState {
     fn default() -> Self {
         Self {
             grid: setup_game(10, 20, 25),
-            game_over: false,
+            play_state: PlayState::InProgress { mines_left: 25 },
         }
     }
 }
@@ -44,7 +51,7 @@ fn set_random_cell_to_mine(
     let rand_x = rng.gen_range(0..x_axis);
     let rand_y = rng.gen_range(0..y_axis);
 
-    if let Number { local_bombs: _ } = game_setup[rand_x][rand_y].cell_type {
+    if let Number { local_mines: _ } = game_setup[rand_x][rand_y].cell_type {
         game_setup[rand_x][rand_y].cell_type = Bomb;
         let neighbours_result = get_neighbours(rand_x, rand_y, x_axis, y_axis);
 
@@ -52,7 +59,7 @@ fn set_random_cell_to_mine(
             Ok(neighbours) => {
                 neighbours.into_iter().for_each(|(x, y)| {
                     if let Number {
-                        ref mut local_bombs,
+                        local_mines: ref mut local_bombs,
                     } = game_setup[x][y].cell_type
                     {
                         *local_bombs += 1

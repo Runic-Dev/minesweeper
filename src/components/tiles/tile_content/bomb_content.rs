@@ -11,7 +11,7 @@ pub fn BombImg() -> impl IntoView {
 
     view! {
         <div class=classes>
-            <svg xmlns="http://www.w3.org/2000/svg" width="800px" height="800px" viewBox="0 0 24 24" fill="none">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none">
                 <path d="M17 7L15 9" stroke="#FFFFFF" stroke-width="1.5" stroke-linecap="round"/>
                 <path d="M19.5 7.5L20.5 8" stroke="#FFFFFF" stroke-width="1.5" stroke-linecap="round"/>
                 <path d="M16 3.5L16.5 4.5" stroke="#FFFFFF" stroke-width="1.5" stroke-linecap="round"/>
