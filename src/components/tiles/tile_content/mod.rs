@@ -2,7 +2,7 @@ pub mod bomb_content;
 pub mod number_content;
 pub mod undug_content;
 
-pub fn get_generic_styles() -> Vec<&'static str> {
+pub fn get_generic_classes() -> Vec<&'static str> {
     vec![
         "w-10",
         "h-10",

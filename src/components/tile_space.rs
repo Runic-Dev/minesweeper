@@ -75,6 +75,6 @@ pub fn TileSpace(
     };
 
     view! {
-        <div class=cell_classes on:click=lmb_click_handler on:contextmenu=rmb_click_handler>{move || get_content() }</div>
+        <div on:click=lmb_click_handler on:contextmenu=rmb_click_handler>{move || get_content() }</div>
     }
 }
