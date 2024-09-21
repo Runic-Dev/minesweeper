@@ -1,6 +1,4 @@
-use leptos::logging::log;
 use leptos::*;
-use wasm_bindgen::JsCast;
 
 use crate::{
     app::GameStateSetter,

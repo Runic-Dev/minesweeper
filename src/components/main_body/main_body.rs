@@ -1,6 +1,6 @@
 use crate::app::GameStateSetter;
 use crate::components::context_menu::ContextMenu;
-use crate::components::tile::TileSpace;
+use crate::components::tile_space::TileSpace;
 use crate::game_state::get_neighbours;
 use crate::tile_state::{TileState, TileType};
 use leptos::logging::log;
@@ -18,6 +18,12 @@ pub fn MainBody() -> impl IntoView {
                     check_for_surrounding_blanks(row, col, &mut state.grid);
                 }
                 if let TileType::Bomb = state.grid[row][col].cell_type {
+                    state
+                        .grid
+                        .iter_mut()
+                        .flatten()
+                        .filter(|tile_state| tile_state.cell_type == TileType::Bomb)
+                        .for_each(|mine_tile| mine_tile.is_dug = true);
                     state.game_over = true;
                 }
             });
