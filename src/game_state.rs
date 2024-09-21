@@ -9,12 +9,14 @@ use crate::tile_state::{
 #[derive(Clone)]
 pub struct GameState {
     pub grid: Vec<Vec<TileState>>,
+    pub game_over: bool,
 }
 
 impl Default for GameState {
     fn default() -> Self {
         Self {
             grid: setup_game(10, 20, 25),
+            game_over: false,
         }
     }
 }

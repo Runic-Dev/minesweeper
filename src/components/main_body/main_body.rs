@@ -1,24 +1,32 @@
+use crate::app::GameStateSetter;
 use crate::components::context_menu::ContextMenu;
-use crate::components::tile::Tile;
-use crate::components::touch_menu::TouchMenu;
-use crate::game_state::{get_neighbours, GameState};
+use crate::components::tile::TileSpace;
+use crate::game_state::get_neighbours;
 use crate::tile_state::{TileState, TileType};
 use leptos::logging::log;
 use leptos::*;
 
 #[component]
-pub fn MainBody(game_state: RwSignal<GameState>) -> impl IntoView {
+pub fn MainBody() -> impl IntoView {
+    let game_state = use_context::<GameStateSetter>().unwrap().0;
+
     let dig_tile = move |(row, col): (usize, usize)| {
-        game_state.update(|state| {
-            state.grid[row][col].is_open = true;
-            if let TileType::Number { local_bombs: 0 } = state.grid[row][col].cell_type {
-                check_for_surrounding_blanks(row, col, &mut state.grid);
-            }
-        });
+        if !game_state.get().game_over {
+            game_state.update(|state| {
+                state.grid[row][col].is_dug = true;
+                if let TileType::Number { local_bombs: 0 } = state.grid[row][col].cell_type {
+                    check_for_surrounding_blanks(row, col, &mut state.grid);
+                }
+                if let TileType::Bomb = state.grid[row][col].cell_type {
+                    state.game_over = true;
+                }
+            });
+        }
     };
 
     let flag_tile = move |(row, col): (usize, usize)| {
-        game_state.update(|state| state.grid[row][col].flagged = !state.grid[row][col].flagged);
+        game_state
+            .update(|state| state.grid[row][col].is_flagged = !state.grid[row][col].is_flagged);
     };
 
     let (ctx_menu_hidden, set_ctx_menu_hidden) = create_signal(true);
@@ -69,7 +77,7 @@ pub fn MainBody(game_state: RwSignal<GameState>) -> impl IntoView {
                                             game_state.with(|state| state.grid[row][col].clone())
                                         });
                                         view! {
-                                            <Tile row=row col=col cell_data=cell_data on_click=dig_tile on_rmb_click=on_ctx_menu_select />
+                                            <TileSpace row=row col=col cell_data=cell_data on_click=dig_tile on_rmb_click=on_ctx_menu_select />
                                         }
                                     }
                                 />
@@ -88,14 +96,14 @@ fn check_for_surrounding_blanks(row: usize, col: usize, state: &mut [Vec<TileSta
             let closed_neighbours = neighbours
                 .into_iter()
                 .filter(|(x, y)| {
-                    !state[*x][*y].is_open
+                    !state[*x][*y].is_dug
                         && matches!(state[*x][*y].cell_type, TileType::Number { local_bombs: _ })
                 })
                 .collect::<Vec<(usize, usize)>>();
 
             closed_neighbours.into_iter().for_each(|(x, y)| {
                 let this_cell = &mut state[x][y];
-                this_cell.is_open = true;
+                this_cell.is_dug = true;
                 if let TileType::Number { local_bombs } = this_cell.cell_type {
                     if local_bombs == 0 {
                         check_for_surrounding_blanks(x, y, state);

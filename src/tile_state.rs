@@ -1,9 +1,9 @@
 #[derive(Clone, PartialEq, Default)]
 pub struct TileState {
     pub cell_type: TileType,
-    pub is_open: bool,
+    pub is_dug: bool,
     pub number: usize,
-    pub flagged: bool,
+    pub is_flagged: bool,
 }
 
 #[derive(Clone, PartialEq)]

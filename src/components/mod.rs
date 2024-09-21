@@ -1,6 +1,6 @@
-mod bomb;
 mod context_menu;
-pub(crate) mod header;
-pub(crate) mod main_body;
+pub mod header;
+pub mod main_body;
 mod tile;
+mod tiles;
 mod touch_menu;

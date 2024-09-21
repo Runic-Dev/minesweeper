@@ -2,31 +2,28 @@ use leptos::logging::log;
 use leptos::*;
 use wasm_bindgen::JsCast;
 
-use crate::tile_state::{TileState, TileType};
+use crate::{
+    app::GameStateSetter,
+    components::tiles::tile_content::{
+        bomb_content::BombImg, number_content::NumberContent, undug_content::UndugTileContent,
+    },
+    tile_state::{TileState, TileType},
+};
 
 #[component]
-pub fn Tile(
+pub fn TileSpace(
     row: usize,
     col: usize,
     #[prop(into)] cell_data: Memo<TileState>,
     on_click: impl Fn((usize, usize)) + 'static,
     on_rmb_click: impl Fn((usize, usize), (i32, i32)) + 'static,
-    // on_touchstart: impl Fn((usize, usize), (i32, i32)) + 'static,
 ) -> impl IntoView {
+    let game_state = use_context::<GameStateSetter>().unwrap().0;
     let lmb_click_handler = move |_| {
-        if !cell_data.get().is_open {
+        if !cell_data.get().is_dug {
             on_click((row, col));
         }
     };
-
-    // let touchstart_handler = move |ev: leptos::ev::TouchEvent| {
-    //     if let Some(touch_event) = ev.dyn_ref::<web_sys::TouchEvent>() {
-    //         if let Some(touch) = touch_event.touches().get(0) {
-    //             log!("Touches: {} {}", touch.client_x(), touch.client_y());
-    //             on_touchstart((row, col), (touch.client_x(), touch.client_y()));
-    //         }
-    //     }
-    // };
 
     let cell_classes = move || {
         let open_bg_color = "bg-slate-800";
@@ -38,7 +35,7 @@ pub fn Tile(
             "flex",
             "justify-center",
             "items-center",
-            match (cell_data.get().cell_type, cell_data.get().is_open) {
+            match (cell_data.get().cell_type, cell_data.get().is_dug) {
                 (TileType::Number { local_bombs: 1 }, true) => "{open_bg_color} text-cyan-500",
                 (TileType::Number { local_bombs: 2 }, true) => "{open_bg_color} text-lime-500",
                 (TileType::Number { local_bombs: 3 }, true) => "{open_bg_color} text-fuchsia-500",
@@ -53,20 +50,30 @@ pub fn Tile(
     };
 
     let get_content = move || match cell_data.get().cell_type {
-        TileType::Number { local_bombs } if local_bombs > 0 && cell_data.get().is_open => {
-            local_bombs.to_string()
+        TileType::Number {
+            local_bombs: local_mines,
+        } if cell_data.get().is_dug => {
+            view! {
+                <NumberContent number=local_mines />
+            }
+        }
+        TileType::Bomb if cell_data.get().is_dug => {
+            view! {
+                <BombImg />
+            }
         }
         _ => {
-            if cell_data.get().flagged {
-                return String::from("F");
+            view! {
+                <UndugTileContent is_flagged=cell_data.get().is_flagged />
             }
-            String::new()
         }
     };
 
     let rmb_click_handler = move |mouse_event: leptos::ev::MouseEvent| {
         mouse_event.prevent_default();
-        on_rmb_click((row, col), (mouse_event.client_x(), mouse_event.client_y()));
+        if !cell_data.get().is_dug && !game_state.get().game_over {
+            on_rmb_click((row, col), (mouse_event.client_x(), mouse_event.client_y()));
+        }
     };
 
     view! {
