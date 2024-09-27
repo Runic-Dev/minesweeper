@@ -1,4 +1,3 @@
-use leptos::logging::log;
 use leptos::*;
 
 use crate::{
@@ -21,7 +20,6 @@ pub fn TileSpace(
     let game_state = use_context::<GameStateSetter>().unwrap().0;
     let lmb_click_handler = move |_| {
         if !cell_data.get().is_dug {
-            log!("Registered click on row: {}, col: {}", row, col);
             on_click((row, col));
         }
     };

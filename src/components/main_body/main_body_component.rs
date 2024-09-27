@@ -40,6 +40,10 @@ pub fn MainBody() -> impl IntoView {
     let flag_tile = move |(row, col): (usize, usize)| {
         game_state
             .update(|state| state.grid[row][col].is_flagged = !state.grid[row][col].is_flagged);
+        if has_won(&game_state.get().grid) {
+            log!("You won!");
+            game_state.update(|state| state.play_state = Win);
+        }
     };
 
     let (ctx_menu_hidden, set_ctx_menu_hidden) = create_signal(true);
@@ -71,7 +75,7 @@ pub fn MainBody() -> impl IntoView {
     };
 
     view! {
-        <div class="flex justify-center">
+        <div class="flex justify-center items-center">
             <div class="game-container grid grid-cols-10 gap-x-1 gap-y-1 m-0 px-1 border-double border-4 border-slate-200 rounded">
                 <Show when=move || !ctx_menu_hidden.get()>
                     <ContextMenu position=ctx_menu_pos on_dig=on_ctx_menu_dig on_flag=on_ctx_menu_flag on_cancel=on_ctx_menu_cancel />
@@ -99,6 +103,14 @@ pub fn MainBody() -> impl IntoView {
                     }
                 />
             </div>
+            <Show when=move || matches!(game_state.get().play_state, Win)>
+                <div class="absolute p-4 flex justify-center bg-green-800 rounded min-h-fit w-1/3">
+                    <h3 class="">You Won!</h3>
+                </div>
+            </Show>
+            <Show when=move || matches!(game_state.get().play_state, Loss)>
+                <div class="absolute p-4 flex justify-center bg-red-800 rounded min-h-fit w-1/3">You lost!</div>
+            </Show>
         </div>
     }
 }
