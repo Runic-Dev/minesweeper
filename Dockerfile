@@ -1,5 +1,5 @@
 # Start with a Rust image
-FROM rust:latest as builder
+FROM rustlang/rust:nightly as builder
 
 # Add the wasm32-unknown-unknown target
 RUN rustup target add wasm32-unknown-unknown
