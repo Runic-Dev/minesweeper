@@ -118,8 +118,8 @@ pub fn MainBody() -> impl IntoView {
                 />
             </div>
             <Show when=move || matches!(game_state.get().play_state, Win)>
-                <div class="absolute p-4 flex flex-col justify-center bg-green-800 rounded min-h-fit w-1/3">
-                    <h3 class="">You Won!</h3>
+                <div class="absolute p-4 flex flex-col justify-center items-center bg-green-800 rounded min-h-fit w-1/3">
+                    <p class="p-2">You Won!</p>
                     <button class="bg-green-600 p-2 rounded" on:click=refresh>Play again</button>
                 </div>
             </Show>
