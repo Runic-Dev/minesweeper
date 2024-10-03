@@ -26,20 +26,27 @@ pub fn MainBody() -> impl IntoView {
         if let InProgress { mines_left: _ } = game_state.get().play_state {
             game_state.update(|state| {
                 state.grid[row][col].is_dug = true;
-                if let TileType::Number { local_mines: 0 } = state.grid[row][col].cell_type {
-                    check_for_surrounding_blanks(row, col, &mut state.grid);
-                    if has_won(&state.grid) {
-                        state.play_state = Win;
-                    };
-                }
-                if let TileType::Bomb = state.grid[row][col].cell_type {
-                    state
-                        .grid
-                        .iter_mut()
-                        .flatten()
-                        .filter(|tile_state| tile_state.cell_type == TileType::Bomb)
-                        .for_each(|mine_tile| mine_tile.is_dug = true);
-                    state.play_state = Loss;
+                match state.grid[row][col].cell_type {
+                    TileType::Number { local_mines: 0 } => {
+                        check_for_surrounding_blanks(row, col, &mut state.grid);
+                        if has_won(&state.grid) {
+                            state.play_state = Win;
+                        };
+                    }
+                    TileType::Number { local_mines: _ } => {
+                        if has_won(&state.grid) {
+                            state.play_state = Win;
+                        };
+                    }
+                    TileType::Bomb => {
+                        state
+                            .grid
+                            .iter_mut()
+                            .flatten()
+                            .filter(|tile_state| tile_state.cell_type == TileType::Bomb)
+                            .for_each(|mine_tile| mine_tile.is_dug = true);
+                        state.play_state = Loss;
+                    }
                 }
             });
         }
