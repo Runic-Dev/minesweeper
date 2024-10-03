@@ -5,7 +5,7 @@ use crate::components::tiles::tile_content::get_generic_classes;
 #[component]
 pub fn UndugTileContent(is_flagged: bool) -> impl IntoView {
     let mut classes = get_generic_classes();
-    classes.extend(&["bg-slate-200", "text-slate-800", "p-2"]);
+    classes.extend(&["bg-slate-200", "text-slate-800", "p-1"]);
     let classes = classes.join(" ");
 
     if is_flagged {
