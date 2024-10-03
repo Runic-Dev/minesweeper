@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html class="h-full">
+
+<head>
+	<title>Minesweeper</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<base href="/minesweeper/" />
+	<script src="https://cdn.tailwindcss.com"></script>
+
+<link rel="modulepreload" href="/minesweeper/minesweeper-7dfbf7e311c607e8.js" crossorigin=anonymous integrity="sha384-qaGXOnfHHQXgzzKdt1lXecpU/qW5M3Z30nr95OGT7QuWrt9vXX1DGfUbnzO3TRr/">
+<link rel="preload" href="/minesweeper/minesweeper-7dfbf7e311c607e8_bg.wasm" crossorigin=anonymous integrity="sha384-I2ZgcYcs9+4vqCOpmtQY10KwQwg6zOjHzct/07LE8fvf9fs1CPfoo/zhwW2U2ekR" as="fetch" type="application/wasm"></head>
+
+<body class="bg-slate-800 text-slate-200 relative h-full">
+<script type="module" nonce="kKeDSp/CJk5G/+ylwKE5Lw==">
+import init, * as bindings from '/minesweeper/minesweeper-7dfbf7e311c607e8.js';
+const wasm = await init('/minesweeper/minesweeper-7dfbf7e311c607e8_bg.wasm');
+
+
+window.wasmBindings = bindings;
+
+
+dispatchEvent(new CustomEvent("TrunkApplicationStarted", {detail: {wasm}}));
+
+</script></body>
+
+</html>
