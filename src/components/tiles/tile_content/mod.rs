@@ -4,8 +4,8 @@ pub mod undug_content;
 
 pub fn get_generic_classes() -> Vec<&'static str> {
     vec![
-        "w-10",
-        "h-10",
+        "w-5",
+        "h-5",
         "my-1",
         "rounded",
         "flex",
