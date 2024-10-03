@@ -23,7 +23,7 @@ pub fn ContextMenu(
             <ul>
                 <li class="px-2 py-1 text-black hover:bg-slate-700 hover:text-white cursor-pointer" on:click=dig_btn_handler>Dig</li>
                 <li class="px-2 py-1 text-black hover:bg-slate-700 hover:text-white cursor-pointer" on:click=flag_btn_handler>Flag</li>
-                <li class="px-2 py-1 bg-red-700 text-white hover:bg-red-300 cursor-pointer" on:click=cancel_btn_handler>Cancel</li>
+                <li class="px-2 py-1 bg-red-700 text-white hover:bg-red-300 cursor-pointer rounded" on:click=cancel_btn_handler>Cancel</li>
             </ul>
         </div>
     }

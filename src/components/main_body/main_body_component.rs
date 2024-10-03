@@ -6,10 +6,21 @@ use crate::game_state::PlayState::{InProgress, Loss, Win};
 use crate::tile_state::TileType;
 use leptos::logging::log;
 use leptos::*;
+use leptos_use::use_document;
 
 #[component]
 pub fn MainBody() -> impl IntoView {
     let game_state = use_context::<GameStateSetter>().unwrap().0;
+
+    let refresh = move |_| {
+        let document = use_document();
+        document.location().map_or_else(
+            || log!("Error getting location"),
+            |location| {
+                let _ = location.reload();
+            },
+        );
+    };
 
     let dig_tile = move |(row, col): (usize, usize)| {
         if let InProgress { mines_left: _ } = game_state.get().play_state {
@@ -18,12 +29,10 @@ pub fn MainBody() -> impl IntoView {
                 if let TileType::Number { local_mines: 0 } = state.grid[row][col].cell_type {
                     check_for_surrounding_blanks(row, col, &mut state.grid);
                     if has_won(&state.grid) {
-                        log!("You won!");
                         state.play_state = Win;
                     };
                 }
                 if let TileType::Bomb = state.grid[row][col].cell_type {
-                    log!("Seem to have clicked a bomb! Row: {}, Col: {}", row, col);
                     state
                         .grid
                         .iter_mut()
@@ -31,7 +40,6 @@ pub fn MainBody() -> impl IntoView {
                         .filter(|tile_state| tile_state.cell_type == TileType::Bomb)
                         .for_each(|mine_tile| mine_tile.is_dug = true);
                     state.play_state = Loss;
-                    log!("You lost!");
                 }
             });
         }
@@ -41,7 +49,6 @@ pub fn MainBody() -> impl IntoView {
         game_state
             .update(|state| state.grid[row][col].is_flagged = !state.grid[row][col].is_flagged);
         if has_won(&game_state.get().grid) {
-            log!("You won!");
             game_state.update(|state| state.play_state = Win);
         }
     };
@@ -104,12 +111,16 @@ pub fn MainBody() -> impl IntoView {
                 />
             </div>
             <Show when=move || matches!(game_state.get().play_state, Win)>
-                <div class="absolute p-4 flex justify-center bg-green-800 rounded min-h-fit w-1/3">
+                <div class="absolute p-4 flex flex-col justify-center bg-green-800 rounded min-h-fit w-1/3">
                     <h3 class="">You Won!</h3>
+                    <button class="bg-green-600 p-2 rounded" on:click=refresh>Play again</button>
                 </div>
             </Show>
             <Show when=move || matches!(game_state.get().play_state, Loss)>
-                <div class="absolute p-4 flex justify-center bg-red-800 rounded min-h-fit w-1/3">You lost!</div>
+                <div class="absolute p-4 flex flex-col justify-center items-center bg-red-800 rounded min-h-fit w-1/3">
+                    <p class="p-2">You Lost!</p>
+                    <button class="bg-red-600 p-2 rounded" on:click=refresh>Play again</button>
+                </div>
             </Show>
         </div>
     }
