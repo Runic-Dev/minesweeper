@@ -27,9 +27,7 @@ pub fn MainBody() -> impl IntoView {
             game_state.update(|state| {
                 state.grid[row][col].is_dug = true;
                 match state.grid[row][col].cell_type {
-                    TileType::Number { local_mines: _ } if state.grid[row][col].is_flagged => {
-                        state.grid[row][col].is_flagged = false;
-                    }
+                    _ if state.grid[row][col].is_flagged => state.grid[row][col].is_flagged = false,
                     TileType::Number { local_mines: 0 } => {
                         check_for_surrounding_blanks(row, col, &mut state.grid);
                         if has_won(&state.grid) {
