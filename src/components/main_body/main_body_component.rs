@@ -24,30 +24,30 @@ pub fn MainBody() -> impl IntoView {
 
     let dig_tile = move |(row, col): (usize, usize)| {
         if let InProgress { mines_left: _ } = game_state.get().play_state {
-            game_state.update(|state| {
-                state.grid[row][col].is_dug = true;
-                match state.grid[row][col].cell_type {
-                    _ if state.grid[row][col].is_flagged => state.grid[row][col].is_flagged = false,
-                    TileType::Number { local_mines: 0 } => {
-                        check_for_surrounding_blanks(row, col, &mut state.grid);
-                        if has_won(&state.grid) {
-                            state.play_state = Win;
-                        };
-                    }
-                    TileType::Number { local_mines: _ } => {
-                        if has_won(&state.grid) {
-                            state.play_state = Win;
-                        };
-                    }
-                    TileType::Bomb => {
-                        state
-                            .grid
-                            .iter_mut()
-                            .flatten()
-                            .filter(|tile_state| tile_state.cell_type == TileType::Bomb)
-                            .for_each(|mine_tile| mine_tile.is_dug = true);
-                        state.play_state = Loss;
-                    }
+            game_state.update(|state| match state.grid[row][col].cell_type {
+                _ if state.grid[row][col].is_flagged => state.grid[row][col].is_flagged = false,
+                TileType::Number { local_mines: 0 } => {
+                    state.grid[row][col].is_dug = true;
+                    check_for_surrounding_blanks(row, col, &mut state.grid);
+                    if has_won(&state.grid) {
+                        state.play_state = Win;
+                    };
+                }
+                TileType::Number { local_mines: _ } => {
+                    state.grid[row][col].is_dug = true;
+                    if has_won(&state.grid) {
+                        state.play_state = Win;
+                    };
+                }
+                TileType::Bomb => {
+                    state.grid[row][col].is_dug = true;
+                    state
+                        .grid
+                        .iter_mut()
+                        .flatten()
+                        .filter(|tile_state| tile_state.cell_type == TileType::Bomb)
+                        .for_each(|mine_tile| mine_tile.is_dug = true);
+                    state.play_state = Loss;
                 }
             });
         }
